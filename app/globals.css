@@ -1,26 +1,52 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ── 手帐色彩系统 ── */
+@theme {
+  --color-paper:      #FDFBF7;
+  --color-paper2:     #F5F2EC;
+  --color-ink:        #2C2C2A;
+  --color-ink2:       #5F5E5A;
+  --color-ink3:       #B4B2A9;
+  --color-line:       #E8E5DE;
+  --color-accent:     #2BA87A;
+  --color-accent2:    #228F67;
+  --color-accent-bg:  #E4F4EC;
+  --color-accent-mid: #5DCAA5;
+  --color-warm:       #C07A18;
+  --color-warm-bg:    #FDF0DC;
+  --color-warm-mid:   #EF9F27;
+  --color-red:        #B83030;
+  --color-red-bg:     #FDF0F0;
+  --color-skip-bg:    #F1EFE8;
 }
 
+/* ── 字体 Token ── */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-num:  'Caveat', cursive;
+  --font-hand: 'Ma Shan Zheng', cursive;
+  --font-body: 'Noto Sans SC', sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ── 全局基础 ── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+html, body {
+  height: 100%;
+  overflow: hidden;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-body, 'Noto Sans SC', sans-serif);
+  -webkit-font-smoothing: antialiased;
 }
+
+::-webkit-scrollbar        { width: 4px; height: 4px; }
+::-webkit-scrollbar-track  { background: transparent; }
+::-webkit-scrollbar-thumb  { background: var(--color-line); border-radius: 2px; }
+
+a { color: var(--color-accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+button { cursor: pointer; }

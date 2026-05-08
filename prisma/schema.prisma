@@ -1,0 +1,43 @@
+datasource db {
+  provider = "sqlite"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  nickname     String
+  avatar       String?
+  createdAt    DateTime @default(now())
+  todos        Todo[]
+}
+
+model Todo {
+  id           String     @id @default(cuid())
+  userId       String?
+  user         User?      @relation(fields: [userId], references: [id])
+  title        String
+  note         String?
+  status       TodoStatus @default(PENDING)
+  important    Boolean    @default(false)
+  date         DateTime?
+  startTime    DateTime?
+  endTime      DateTime?
+  deadline     DateTime?
+  isRecurring  Boolean    @default(false)
+  recurRule    String?
+  recurGroupId String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
+
+enum TodoStatus {
+  PENDING
+  DONE
+  SKIPPED
+  OVERDUE
+}
