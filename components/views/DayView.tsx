@@ -260,7 +260,7 @@ export default function DayView() {
 
   return (
     <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-      <div className="flex flex-1 overflow-hidden relative px-4">
+      <div className="flex flex-1 overflow-hidden relative" style={{ paddingLeft: 16, paddingRight: 16 }}>
 
         {/* ── 左侧：Todo 列表 ── */}
         <div className="w-[272px] flex-shrink-0 border-r border-line flex flex-col overflow-hidden">
@@ -311,7 +311,7 @@ export default function DayView() {
 
         {/* ── 右侧：时间轴 + 绝对定位时间块 ── */}
         <div className="flex-1 overflow-y-auto">
-          <div className="relative">
+          <div className="relative" style={{ paddingBottom: 16 }}>
             {/* 小时格网格 */}
             {HOURS.map((hour) => (
               <div key={hour} className="h-[52px] flex border-b border-line">

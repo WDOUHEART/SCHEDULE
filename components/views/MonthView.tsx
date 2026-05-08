@@ -216,7 +216,7 @@ export default function MonthView() {
           refreshTrigger={sidebarRefreshKey}
         />
 
-        <div className="flex flex-col flex-1 overflow-hidden px-4" ref={containerRef}>
+        <div className="flex flex-col flex-1 overflow-hidden" style={{ paddingLeft: 16, paddingRight: 16 }} ref={containerRef}>
           {/* 星期头 */}
           <div className="grid grid-cols-7 border-b border-line flex-shrink-0">
             {WEEKDAYS.map((w, i) => (
@@ -232,7 +232,7 @@ export default function MonthView() {
           </div>
 
           {/* 日期格 */}
-          <div className="grid grid-cols-7 flex-1 overflow-y-auto">
+          <div className="grid grid-cols-7 flex-1 overflow-y-auto" style={{ paddingBottom: 16 }}>
             {days.map((day, idx) => (
               <DroppableCell
                 key={idx}

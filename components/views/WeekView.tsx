@@ -177,7 +177,7 @@ export default function WeekView() {
       <div className="flex flex-1 overflow-hidden relative">
         <Sidebar onTodosChange={fetchTodos} dragEnabled refreshTrigger={sidebarRefreshKey} />
 
-        <div className="flex flex-col flex-1 overflow-hidden px-4">
+        <div className="flex flex-col flex-1 overflow-hidden" style={{ paddingLeft: 16, paddingRight: 16 }}>
           {/* 统计条 */}
           <div className="flex border-b border-line flex-shrink-0">
             {[
@@ -230,7 +230,7 @@ export default function WeekView() {
 
           {/* ── 时间轴 ── */}
           <div className="flex-1 overflow-y-auto">
-            <div className="grid" style={{ gridTemplateColumns: '44px repeat(7, 1fr)' }}>
+            <div className="grid" style={{ gridTemplateColumns: '44px repeat(7, 1fr)', paddingBottom: 16 }}>
               {/* 表头 */}
               <div className="h-[56px] border-r border-b border-line" />
               {weekDays.map((day, i) => {
