@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useEffect, useState, useTransition } from 'react'
+import { useRef, useEffect, useState } from 'react'
 import { createTodo } from '@/app/actions/todos'
 
 interface InlineAddProps {
@@ -14,7 +14,6 @@ export default function InlineAdd({ date, startTime, onDone, onAdd }: InlineAddP
   const inputRef = useRef<HTMLInputElement>(null)
   const [title, setTitle] = useState('')
   const [important, setImportant] = useState(false)
-  const [pending, startTransition] = useTransition()
 
   useEffect(() => {
     setTimeout(() => inputRef.current?.focus(), 50)
@@ -26,13 +25,14 @@ export default function InlineAdd({ date, startTime, onDone, onAdd }: InlineAddP
   }
 
   function submit() {
-    if (!title.trim() || pending) return
-    startTransition(async () => {
-      await createTodo({ title: title.trim(), date, startTime, important })
-      setTitle('')
-      setImportant(false)
-      onAdd()
-    })
+    if (!title.trim()) return
+    const t = title.trim()
+    const imp = important
+    // 立即清空，不等服务器
+    setTitle('')
+    setImportant(false)
+    // 后台提交，完成后刷新列表
+    createTodo({ title: t, date, startTime, important: imp }).then(() => onAdd())
   }
 
   return (
@@ -47,10 +47,8 @@ export default function InlineAdd({ date, startTime, onDone, onAdd }: InlineAddP
         onChange={(e) => setTitle(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder="写点什么..."
-        disabled={pending}
         className="flex-1 text-[12px] font-hand text-ink bg-transparent border-none outline-none placeholder:text-ink3 placeholder:italic placeholder:text-[11px] min-w-0"
       />
-      {/* 重要标记 — 用背景色变化确保状态清晰可见 */}
       <button
         onClick={() => setImportant(!important)}
         title="标为重要"
@@ -65,7 +63,7 @@ export default function InlineAdd({ date, startTime, onDone, onAdd }: InlineAddP
       </button>
       <button
         onClick={submit}
-        disabled={!title.trim() || pending}
+        disabled={!title.trim()}
         className="text-[13px] text-accent disabled:opacity-30 hover:text-accent2 transition-colors flex-shrink-0"
         title="添加（Enter）"
       >

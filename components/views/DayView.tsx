@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useTransition, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import {
   DndContext, DragOverlay, PointerSensor, TouchSensor,
   useDroppable, useDraggable, useSensor, useSensors,
@@ -201,7 +201,6 @@ export default function DayView() {
   const { currentDate } = useViewStore()
   const [todos, setTodos] = useState<Todo[]>([])
   const [quickTitle, setQuickTitle] = useState('')
-  const [addPending, startAdd] = useTransition()
   const [activeHour, setActiveHour] = useState<number | null>(null)
   const [activeDragData, setActiveDragData] = useState<{ title: string; important: boolean } | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -235,12 +234,10 @@ export default function DayView() {
   const pct = todos.length > 0 ? Math.round((done / todos.length) * 100) : 0
 
   function handleQuickAdd(e: React.KeyboardEvent) {
-    if (e.key !== 'Enter' || !quickTitle.trim() || addPending) return
-    startAdd(async () => {
-      await createTodo({ title: quickTitle.trim(), date: currentDate })
-      setQuickTitle('')
-      await fetchTodos()
-    })
+    if (e.key !== 'Enter' || !quickTitle.trim()) return
+    const t = quickTitle.trim()
+    setQuickTitle('')
+    createTodo({ title: t, date: currentDate }).then(() => fetchTodos())
   }
 
   function handleDragStart(event: DragStartEvent) {
@@ -302,7 +299,6 @@ export default function DayView() {
               onChange={(e) => setQuickTitle(e.target.value)}
               onKeyDown={handleQuickAdd}
               placeholder="快速记录今日待办..."
-              disabled={addPending}
               className="flex-1 bg-transparent font-hand text-[14px] text-ink placeholder:text-ink3 placeholder:italic outline-none"
             />
             {quickTitle && <span className="text-[10px] text-ink3 flex-shrink-0">↩ 添加</span>}

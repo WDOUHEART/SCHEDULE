@@ -1,6 +1,6 @@
 'use client'
 
-import { useTransition } from 'react'
+import { useState, useEffect } from 'react'
 import { updateTodoStatus, toggleTodoImportant, deleteTodo } from '@/app/actions/todos'
 import type { Todo, TodoStatus } from '@/types'
 import { cn } from '@/lib/utils'
@@ -28,38 +28,35 @@ interface TodoItemProps {
 }
 
 export default function TodoItem({ todo, variant = 'chip', onUpdate }: TodoItemProps) {
-  const [pending, startTransition] = useTransition()
+  const [localStatus, setLocalStatus] = useState<TodoStatus>(todo.status)
+  const [localImportant, setLocalImportant] = useState(todo.important)
 
-  const circle = STATUS_CIRCLE[todo.status]
+  useEffect(() => { setLocalStatus(todo.status) }, [todo.status])
+  useEffect(() => { setLocalImportant(todo.important) }, [todo.important])
+
+  const circle = STATUS_CIRCLE[localStatus]
 
   function handleStatusClick(e: React.MouseEvent) {
     e.stopPropagation()
-    const next = NEXT_STATUS[todo.status]
-    startTransition(async () => {
-      await updateTodoStatus(todo.id, next)
-      onUpdate?.()
-    })
+    const next = NEXT_STATUS[localStatus]
+    setLocalStatus(next)
+    updateTodoStatus(todo.id, next).then(() => onUpdate?.())
   }
 
   function handleImportantClick(e: React.MouseEvent) {
     e.stopPropagation()
-    startTransition(async () => {
-      await toggleTodoImportant(todo.id)
-      onUpdate?.()
-    })
+    setLocalImportant((v) => !v)
+    toggleTodoImportant(todo.id).then(() => onUpdate?.())
   }
 
   function handleDelete(e: React.MouseEvent) {
     e.stopPropagation()
-    startTransition(async () => {
-      await deleteTodo(todo.id)
-      onUpdate?.()
-    })
+    deleteTodo(todo.id).then(() => onUpdate?.())
   }
 
-  const isDone = todo.status === 'DONE'
-  const isSkipped = todo.status === 'SKIPPED'
-  const isOverdue = todo.status === 'OVERDUE'
+  const isDone = localStatus === 'DONE'
+  const isSkipped = localStatus === 'SKIPPED'
+  const isOverdue = localStatus === 'OVERDUE'
 
   // ── 月视图迷你条目 ──
   if (variant === 'chip') {
@@ -68,7 +65,6 @@ export default function TodoItem({ todo, variant = 'chip', onUpdate }: TodoItemP
         className={cn(
           'group flex items-center gap-1 px-1 py-0.5 rounded cursor-pointer transition-colors min-w-0',
           'hover:bg-black/[.04]',
-          pending && 'opacity-50',
         )}
       >
         {/* 状态圆圈 */}
@@ -97,7 +93,7 @@ export default function TodoItem({ todo, variant = 'chip', onUpdate }: TodoItemP
         </span>
 
         {/* 重要旗 */}
-        {todo.important && (
+        {localImportant && (
           <span
             onClick={handleImportantClick}
             className={cn('text-[9px] flex-shrink-0 ml-auto', isDone ? 'opacity-40' : 'text-warm-mid')}
@@ -123,7 +119,6 @@ export default function TodoItem({ todo, variant = 'chip', onUpdate }: TodoItemP
       className={cn(
         'group flex items-start gap-2.5 px-3.5 py-2.5 border-b border-line cursor-pointer transition-colors',
         'hover:bg-paper2',
-        pending && 'opacity-50',
       )}
     >
       {/* 状态圆圈 */}
@@ -162,11 +157,11 @@ export default function TodoItem({ todo, variant = 'chip', onUpdate }: TodoItemP
           onClick={handleImportantClick}
           className={cn(
             'text-[14px] transition-colors',
-            todo.important
+            localImportant
               ? isDone ? 'opacity-40 text-warm-mid' : 'text-warm-mid'
               : 'text-ink3 opacity-0 group-hover:opacity-60 hover:!opacity-100',
           )}
-          title={todo.important ? '取消重要' : '标为重要'}
+          title={localImportant ? '取消重要' : '标为重要'}
         >
           🚩
         </button>
