@@ -2,12 +2,13 @@
 
 import { useRef, useEffect, useState } from 'react'
 import { createTodo } from '@/app/actions/todos'
+import type { Todo } from '@/types'
 
 interface InlineAddProps {
   date: Date
   startTime?: Date
   onDone: () => void
-  onAdd: () => void
+  onAdd: (todo: Todo) => void
 }
 
 export default function InlineAdd({ date, startTime, onDone, onAdd }: InlineAddProps) {
@@ -32,7 +33,7 @@ export default function InlineAdd({ date, startTime, onDone, onAdd }: InlineAddP
     setTitle('')
     setImportant(false)
     // 后台提交，完成后刷新列表
-    createTodo({ title: t, date, startTime, important: imp }).then(() => onAdd())
+    createTodo({ title: t, date, startTime, important: imp }).then((newTodo) => onAdd(newTodo))
   }
 
   return (

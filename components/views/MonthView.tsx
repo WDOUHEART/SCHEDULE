@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import {
   DndContext,
   DragOverlay,
-  PointerSensor,
   TouchSensor,
   useDroppable,
   useSensor,
@@ -12,6 +11,7 @@ import {
   type DragEndEvent,
   type DragStartEvent,
 } from '@dnd-kit/core'
+import { SmartPointerSensor } from '@/lib/dnd'
 import Sidebar from '@/components/layout/Sidebar'
 import TodoItem from '@/components/todo/TodoItem'
 import InlineAdd from '@/components/todo/InlineAdd'
@@ -48,13 +48,13 @@ interface DroppableCellProps {
   onCellClick: (day: Date) => void
   onMoreClick: (e: React.MouseEvent, day: Date) => void
   onInlineDone: () => void
-  onInlineAdd: () => void
-  fetchTodos: () => void
+  onInlineAdd: (todo: Todo) => void
+  onDelete: (id: string) => void
 }
 
 function DroppableCell({
   day, idx, isCurrentMonth, today, isWeekend, isActive, isExpanded,
-  dayTodos, onCellClick, onMoreClick, onInlineDone, onInlineAdd, fetchTodos,
+  dayTodos, onCellClick, onMoreClick, onInlineDone, onInlineAdd, onDelete,
 }: DroppableCellProps) {
   const { setNodeRef, isOver } = useDroppable({ id: day.toISOString() })
   const shown = isExpanded ? dayTodos : dayTodos.slice(0, 3)
@@ -98,7 +98,7 @@ function DroppableCell({
       {/* Todo 条目 */}
       <div className="flex-1 min-h-0 overflow-hidden">
         {shown.map((todo) => (
-          <TodoItem key={todo.id} todo={todo} variant="chip" onUpdate={fetchTodos} />
+          <TodoItem key={todo.id} todo={todo} variant="chip" onDelete={onDelete} />
         ))}
         {extra > 0 && (
           <button
@@ -142,7 +142,7 @@ export default function MonthView() {
 
   // 拖拽传感器：鼠标移动 8px 或触屏长按 250ms 才触发
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(SmartPointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } }),
   )
 
@@ -247,8 +247,8 @@ export default function MonthView() {
                 onCellClick={handleCellClick}
                 onMoreClick={handleMoreClick}
                 onInlineDone={() => setActiveDay(null)}
-                onInlineAdd={() => { fetchTodos(); setActiveDay(null) }}
-                fetchTodos={fetchTodos}
+                onInlineAdd={(newTodo) => { setTodos((prev) => [...prev, newTodo]); setActiveDay(null) }}
+                onDelete={(id) => setTodos((prev) => prev.filter((t) => t.id !== id))}
               />
             ))}
           </div>

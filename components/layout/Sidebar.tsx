@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useTransition, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useDraggable } from '@dnd-kit/core'
 import { createTodo } from '@/app/actions/todos'
 import TodoItem from '@/components/todo/TodoItem'
@@ -13,7 +13,7 @@ interface SidebarProps {
 }
 
 // 可拖拽的单条待排期 Todo
-function DraggableTodoChip({ todo, onUpdate }: { todo: Todo; onUpdate: () => void }) {
+function DraggableTodoChip({ todo, onDelete }: { todo: Todo; onDelete: (id: string) => void }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: todo.id,
     data: { title: todo.title, important: todo.important },
@@ -25,7 +25,7 @@ function DraggableTodoChip({ todo, onUpdate }: { todo: Todo; onUpdate: () => voi
       {...attributes}
       className={`transition-opacity touch-none ${isDragging ? 'opacity-30' : ''}`}
     >
-      <TodoItem todo={todo} variant="chip" onUpdate={onUpdate} />
+      <TodoItem todo={todo} variant="chip" onDelete={onDelete} />
     </div>
   )
 }
@@ -35,7 +35,6 @@ export default function Sidebar({ onTodosChange, dragEnabled, refreshTrigger }: 
   const [pendingOpen, setPendingOpen] = useState(true)
   const [unscheduled, setUnscheduled] = useState<Todo[]>([])
   const [addTitle, setAddTitle] = useState('')
-  const [addPending, startAdd] = useTransition()
   const inputRef = useRef<HTMLInputElement>(null)
 
   const fetchUnscheduled = useCallback(async () => {
@@ -56,12 +55,11 @@ export default function Sidebar({ onTodosChange, dragEnabled, refreshTrigger }: 
   }, [open, fetchUnscheduled, refreshTrigger])
 
   function handleAdd(e: React.KeyboardEvent) {
-    if (e.key !== 'Enter' || !addTitle.trim() || addPending) return
-    startAdd(async () => {
-      await createTodo({ title: addTitle.trim() })
-      setAddTitle('')
-      await fetchUnscheduled()
-      onTodosChange?.()
+    if (e.key !== 'Enter' || !addTitle.trim()) return
+    const t = addTitle.trim()
+    setAddTitle('')
+    createTodo({ title: t }).then((newTodo) => {
+      setUnscheduled((prev) => [...prev, newTodo])
     })
   }
 
@@ -97,14 +95,14 @@ export default function Sidebar({ onTodosChange, dragEnabled, refreshTrigger }: 
                     <DraggableTodoChip
                       key={todo.id}
                       todo={todo}
-                      onUpdate={() => { fetchUnscheduled(); onTodosChange?.() }}
+                      onDelete={(id) => setUnscheduled((prev) => prev.filter((t) => t.id !== id))}
                     />
                   ) : (
                     <TodoItem
                       key={todo.id}
                       todo={todo}
                       variant="chip"
-                      onUpdate={() => { fetchUnscheduled(); onTodosChange?.() }}
+                      onDelete={(id) => setUnscheduled((prev) => prev.filter((t) => t.id !== id))}
                     />
                   )
                 )
@@ -120,17 +118,15 @@ export default function Sidebar({ onTodosChange, dragEnabled, refreshTrigger }: 
               onChange={(e) => setAddTitle(e.target.value)}
               onKeyDown={handleAdd}
               placeholder="快速添加..."
-              disabled={addPending}
               className="flex-1 bg-transparent text-[12px] font-hand text-ink placeholder:text-ink3 placeholder:italic placeholder:text-[11px] border-none outline-none"
             />
             <button
               onClick={() => {
                 if (addTitle.trim()) {
-                  startAdd(async () => {
-                    await createTodo({ title: addTitle.trim() })
-                    setAddTitle('')
-                    await fetchUnscheduled()
-                    onTodosChange?.()
+                  const t = addTitle.trim()
+                  setAddTitle('')
+                  createTodo({ title: t }).then((newTodo) => {
+                    setUnscheduled((prev) => [...prev, newTodo])
                   })
                 }
               }}

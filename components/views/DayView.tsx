@@ -2,10 +2,11 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import {
-  DndContext, DragOverlay, PointerSensor, TouchSensor,
+  DndContext, DragOverlay, TouchSensor,
   useDroppable, useDraggable, useSensor, useSensors,
   type DragEndEvent, type DragStartEvent,
 } from '@dnd-kit/core'
+import { SmartPointerSensor } from '@/lib/dnd'
 import { createTodo, setTodoTime, setTodoEndTime } from '@/app/actions/todos'
 import InlineAdd from '@/components/todo/InlineAdd'
 import TodoItem from '@/components/todo/TodoItem'
@@ -52,7 +53,7 @@ function computeLayout(todos: Todo[]): Map<string, { col: number; numCols: numbe
 }
 
 // ── 左侧：可拖拽 Todo 行 ───────────────────────────────
-function DraggableTodoRow({ todo, onUpdate }: { todo: Todo; onUpdate: () => void }) {
+function DraggableTodoRow({ todo, onDelete }: { todo: Todo; onDelete: (id: string) => void }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: todo.id,
     data: { title: todo.title, important: todo.important },
@@ -61,7 +62,7 @@ function DraggableTodoRow({ todo, onUpdate }: { todo: Todo; onUpdate: () => void
     <div ref={setNodeRef} {...listeners} {...attributes}
       className={`touch-none select-none ${isDragging ? 'opacity-30' : ''}`}
     >
-      <TodoItem todo={todo} variant="full" onUpdate={onUpdate} />
+      <TodoItem todo={todo} variant="full" onDelete={onDelete} />
     </div>
   )
 }
@@ -71,7 +72,7 @@ function DroppableHourSlot({
   hour, date, isActive, onOpen, onClose, onAdd,
 }: {
   hour: number; date: Date; isActive: boolean
-  onOpen: () => void; onClose: () => void; onAdd: () => void
+  onOpen: () => void; onClose: () => void; onAdd: (todo: Todo) => void
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: `day-slot-${hour}`, data: { hour, date } })
   return (
@@ -206,7 +207,7 @@ export default function DayView() {
   const inputRef = useRef<HTMLInputElement>(null)
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(SmartPointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } }),
   )
 
@@ -237,7 +238,7 @@ export default function DayView() {
     if (e.key !== 'Enter' || !quickTitle.trim()) return
     const t = quickTitle.trim()
     setQuickTitle('')
-    createTodo({ title: t, date: currentDate }).then(() => fetchTodos())
+    createTodo({ title: t, date: currentDate }).then((newTodo) => setTodos((prev) => [...prev, newTodo]))
   }
 
   function handleDragStart(event: DragStartEvent) {
@@ -289,7 +290,7 @@ export default function DayView() {
               </div>
             ) : (
               todos.map((todo) => (
-                <DraggableTodoRow key={todo.id} todo={todo} onUpdate={fetchTodos} />
+                <DraggableTodoRow key={todo.id} todo={todo} onDelete={(id) => setTodos((prev) => prev.filter((t) => t.id !== id))} />
               ))
             )}
           </div>
@@ -320,7 +321,7 @@ export default function DayView() {
                   isActive={activeHour === hour}
                   onOpen={() => setActiveHour(hour)}
                   onClose={() => setActiveHour(null)}
-                  onAdd={() => { fetchTodos(); setActiveHour(null) }}
+                  onAdd={(newTodo) => { setTodos((prev) => [...prev, newTodo]); setActiveHour(null) }}
                 />
               </div>
             ))}

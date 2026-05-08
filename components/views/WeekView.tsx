@@ -2,10 +2,11 @@
 
 import React, { useState, useEffect, useCallback } from 'react'
 import {
-  DndContext, DragOverlay, PointerSensor, TouchSensor,
+  DndContext, DragOverlay, TouchSensor,
   useDroppable, useDraggable, useSensor, useSensors,
   type DragEndEvent, type DragStartEvent,
 } from '@dnd-kit/core'
+import { SmartPointerSensor } from '@/lib/dnd'
 import Sidebar from '@/components/layout/Sidebar'
 import FAB from '@/components/todo/FAB'
 import InlineAdd from '@/components/todo/InlineAdd'
@@ -27,7 +28,7 @@ function getWeekDays(date: Date): Date[] {
 }
 
 // ── 顶部列表：可拖拽 Todo 条目 ────────────────────────
-function DraggableTodoChip({ todo, onUpdate }: { todo: Todo; onUpdate: () => void }) {
+function DraggableTodoChip({ todo, onDelete }: { todo: Todo; onDelete: (id: string) => void }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: todo.id,
     data: { title: todo.title, important: todo.important },
@@ -36,7 +37,7 @@ function DraggableTodoChip({ todo, onUpdate }: { todo: Todo; onUpdate: () => voi
     <div ref={setNodeRef} {...listeners} {...attributes}
       className={`touch-none select-none ${isDragging ? 'opacity-30' : ''}`}
     >
-      <TodoItem todo={todo} variant="chip" onUpdate={onUpdate} />
+      <TodoItem todo={todo} variant="chip" onDelete={onDelete} />
     </div>
   )
 }
@@ -46,7 +47,7 @@ function WeekDroppableSlot({
   di, hour, day, isSlotActive, todos, onOpen, onInlineDone, onInlineAdd,
 }: {
   di: number; hour: number; day: Date; isSlotActive: boolean; todos: Todo[]
-  onOpen: () => void; onInlineDone: () => void; onInlineAdd: () => void
+  onOpen: () => void; onInlineDone: () => void; onInlineAdd: (todo: Todo) => void
 }) {
   const { setNodeRef, isOver } = useDroppable({
     id: `week-slot-${di}-${hour}`,
@@ -101,7 +102,7 @@ export default function WeekView() {
   const [activeDragData, setActiveDragData] = useState<{ title: string; important: boolean } | null>(null)
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(SmartPointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } }),
   )
 
@@ -211,10 +212,10 @@ export default function WeekView() {
                   return (
                     <div key={i} className={`border-r last:border-r-0 border-line p-1 min-h-[52px] transition-colors ${isActive ? 'bg-accent-bg/40' : ''}`}>
                       {dayTodos.map((todo) => (
-                        <DraggableTodoChip key={todo.id} todo={todo} onUpdate={fetchTodos} />
+                        <DraggableTodoChip key={todo.id} todo={todo} onDelete={(id) => setTodos((prev) => prev.filter((t) => t.id !== id))} />
                       ))}
                       {isActive ? (
-                        <InlineAdd date={day} onDone={() => setActiveDay(null)} onAdd={() => { fetchTodos(); setActiveDay(null) }} />
+                        <InlineAdd date={day} onDone={() => setActiveDay(null)} onAdd={(newTodo) => { setTodos((prev) => [...prev, newTodo]); setActiveDay(null) }} />
                       ) : (
                         <button onClick={() => handleDayAddClick(day)}
                           className="text-[10px] text-ink3/50 hover:text-accent w-full text-left px-0.5 py-0.5 mt-0.5 transition-colors">
@@ -266,7 +267,7 @@ export default function WeekView() {
                       todos={todosAtSlot(di, hour)}
                       onOpen={() => handleTimeSlotClick(di, hour)}
                       onInlineDone={() => setActiveSlot(null)}
-                      onInlineAdd={() => { fetchTodos(); setActiveSlot(null) }}
+                      onInlineAdd={(newTodo) => { setTodos((prev) => [...prev, newTodo]); setActiveSlot(null) }}
                     />
                   ))}
                 </React.Fragment>

@@ -24,10 +24,10 @@ const STATUS_CIRCLE: Record<TodoStatus, { cls: string; icon: string }> = {
 interface TodoItemProps {
   todo: Todo
   variant?: 'chip' | 'full'
-  onUpdate?: () => void
+  onDelete?: (id: string) => void
 }
 
-export default function TodoItem({ todo, variant = 'chip', onUpdate }: TodoItemProps) {
+export default function TodoItem({ todo, variant = 'chip', onDelete }: TodoItemProps) {
   const [localStatus, setLocalStatus] = useState<TodoStatus>(todo.status)
   const [localImportant, setLocalImportant] = useState(todo.important)
 
@@ -40,18 +40,19 @@ export default function TodoItem({ todo, variant = 'chip', onUpdate }: TodoItemP
     e.stopPropagation()
     const next = NEXT_STATUS[localStatus]
     setLocalStatus(next)
-    updateTodoStatus(todo.id, next).then(() => onUpdate?.())
+    updateTodoStatus(todo.id, next)
   }
 
   function handleImportantClick(e: React.MouseEvent) {
     e.stopPropagation()
     setLocalImportant((v) => !v)
-    toggleTodoImportant(todo.id).then(() => onUpdate?.())
+    toggleTodoImportant(todo.id)
   }
 
   function handleDelete(e: React.MouseEvent) {
     e.stopPropagation()
-    deleteTodo(todo.id).then(() => onUpdate?.())
+    onDelete?.(todo.id)
+    deleteTodo(todo.id)
   }
 
   const isDone = localStatus === 'DONE'
