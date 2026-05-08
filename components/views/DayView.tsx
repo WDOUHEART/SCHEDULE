@@ -260,7 +260,7 @@ export default function DayView() {
 
   return (
     <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-      <div className="flex flex-1 overflow-hidden relative">
+      <div className="flex flex-1 overflow-hidden relative px-4">
 
         {/* ── 左侧：Todo 列表 ── */}
         <div className="w-[272px] flex-shrink-0 border-r border-line flex flex-col overflow-hidden">

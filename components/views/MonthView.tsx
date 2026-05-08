@@ -216,7 +216,7 @@ export default function MonthView() {
           refreshTrigger={sidebarRefreshKey}
         />
 
-        <div className="flex flex-col flex-1 overflow-hidden" ref={containerRef}>
+        <div className="flex flex-col flex-1 overflow-hidden px-4" ref={containerRef}>
           {/* 星期头 */}
           <div className="grid grid-cols-7 border-b border-line flex-shrink-0">
             {WEEKDAYS.map((w, i) => (

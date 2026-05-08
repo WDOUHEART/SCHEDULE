@@ -177,7 +177,7 @@ export default function WeekView() {
       <div className="flex flex-1 overflow-hidden relative">
         <Sidebar onTodosChange={fetchTodos} dragEnabled refreshTrigger={sidebarRefreshKey} />
 
-        <div className="flex flex-col flex-1 overflow-hidden">
+        <div className="flex flex-col flex-1 overflow-hidden px-4">
           {/* 统计条 */}
           <div className="flex border-b border-line flex-shrink-0">
             {[
