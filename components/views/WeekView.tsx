@@ -47,7 +47,7 @@ function WeekDroppableSlot({
   di, hour, day, isSlotActive, todos, onOpen, onInlineDone, onInlineAdd,
 }: {
   di: number; hour: number; day: Date; isSlotActive: boolean; todos: Todo[]
-  onOpen: () => void; onInlineDone: () => void; onInlineAdd: (todo: Todo) => void
+  onOpen: () => void; onInlineDone: () => void; onInlineAdd: (todo: Todo) => void; onInlineCommit: (tempId: string, real: Todo) => void
 }) {
   const { setNodeRef, isOver } = useDroppable({
     id: `week-slot-${di}-${hour}`,
@@ -76,6 +76,7 @@ function WeekDroppableSlot({
             startTime={new Date(day.getFullYear(), day.getMonth(), day.getDate(), hour, 0)}
             onDone={onInlineDone}
             onAdd={onInlineAdd}
+            onCommit={onInlineCommit}
           />
         </div>
       ) : (
@@ -215,7 +216,10 @@ export default function WeekView() {
                         <DraggableTodoChip key={todo.id} todo={todo} onDelete={(id) => setTodos((prev) => prev.filter((t) => t.id !== id))} />
                       ))}
                       {isActive ? (
-                        <InlineAdd date={day} onDone={() => setActiveDay(null)} onAdd={(newTodo) => { setTodos((prev) => [...prev, newTodo]); setActiveDay(null) }} />
+                        <InlineAdd date={day} onDone={() => setActiveDay(null)}
+                          onAdd={(todo) => { setTodos((prev) => [...prev, todo]); setActiveDay(null) }}
+                          onCommit={(tempId, real) => setTodos((prev) => prev.map((t) => t.id === tempId ? real : t))}
+                        />
                       ) : (
                         <button onClick={() => handleDayAddClick(day)}
                           className="text-[10px] text-ink3/50 hover:text-accent w-full text-left px-0.5 py-0.5 mt-0.5 transition-colors">
@@ -267,7 +271,8 @@ export default function WeekView() {
                       todos={todosAtSlot(di, hour)}
                       onOpen={() => handleTimeSlotClick(di, hour)}
                       onInlineDone={() => setActiveSlot(null)}
-                      onInlineAdd={(newTodo) => { setTodos((prev) => [...prev, newTodo]); setActiveSlot(null) }}
+                      onInlineAdd={(todo) => { setTodos((prev) => [...prev, todo]); setActiveSlot(null) }}
+                      onInlineCommit={(tempId, real) => setTodos((prev) => prev.map((t) => t.id === tempId ? real : t))}
                     />
                   ))}
                 </React.Fragment>

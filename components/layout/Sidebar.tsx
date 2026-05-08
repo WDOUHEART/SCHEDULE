@@ -58,9 +58,17 @@ export default function Sidebar({ onTodosChange, dragEnabled, refreshTrigger }: 
     if (e.key !== 'Enter' || !addTitle.trim()) return
     const t = addTitle.trim()
     setAddTitle('')
-    createTodo({ title: t }).then((newTodo) => {
-      setUnscheduled((prev) => [...prev, newTodo])
-    })
+    const tempId = `opt-${Date.now()}`
+    const now = new Date()
+    setUnscheduled((prev) => [...prev, {
+      id: tempId, title: t, important: false, status: 'PENDING',
+      date: null, startTime: null, endTime: null, note: null,
+      deadline: null, isRecurring: false, recurRule: null, recurGroupId: null,
+      createdAt: now, updatedAt: now, userId: null,
+    }])
+    createTodo({ title: t }).then((real) =>
+      setUnscheduled((prev) => prev.map((todo) => todo.id === tempId ? real : todo))
+    )
   }
 
   return (
@@ -125,9 +133,17 @@ export default function Sidebar({ onTodosChange, dragEnabled, refreshTrigger }: 
                 if (addTitle.trim()) {
                   const t = addTitle.trim()
                   setAddTitle('')
-                  createTodo({ title: t }).then((newTodo) => {
-                    setUnscheduled((prev) => [...prev, newTodo])
-                  })
+                  const tempId = `opt-${Date.now()}`
+                  const now = new Date()
+                  setUnscheduled((prev) => [...prev, {
+                    id: tempId, title: t, important: false, status: 'PENDING',
+                    date: null, startTime: null, endTime: null, note: null,
+                    deadline: null, isRecurring: false, recurRule: null, recurGroupId: null,
+                    createdAt: now, updatedAt: now, userId: null,
+                  }])
+                  createTodo({ title: t }).then((real) =>
+                    setUnscheduled((prev) => prev.map((todo) => todo.id === tempId ? real : todo))
+                  )
                 }
               }}
               className="text-[17px] text-accent leading-none"

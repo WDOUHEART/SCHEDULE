@@ -9,9 +9,10 @@ interface InlineAddProps {
   startTime?: Date
   onDone: () => void
   onAdd: (todo: Todo) => void
+  onCommit?: (tempId: string, realTodo: Todo) => void
 }
 
-export default function InlineAdd({ date, startTime, onDone, onAdd }: InlineAddProps) {
+export default function InlineAdd({ date, startTime, onDone, onAdd, onCommit }: InlineAddProps) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [title, setTitle] = useState('')
   const [important, setImportant] = useState(false)
@@ -29,11 +30,21 @@ export default function InlineAdd({ date, startTime, onDone, onAdd }: InlineAddP
     if (!title.trim()) return
     const t = title.trim()
     const imp = important
-    // 立即清空，不等服务器
     setTitle('')
     setImportant(false)
-    // 后台提交，完成后刷新列表
-    createTodo({ title: t, date, startTime, important: imp }).then((newTodo) => onAdd(newTodo))
+    // 立即乐观插入
+    const tempId = `opt-${Date.now()}`
+    const now = new Date()
+    onAdd({
+      id: tempId, title: t, important: imp, status: 'PENDING',
+      date: date ?? null, startTime: startTime ?? null, endTime: null,
+      note: null, deadline: null, isRecurring: false, recurRule: null,
+      recurGroupId: null, createdAt: now, updatedAt: now, userId: null,
+    })
+    // 后台提交，拿到真实 ID 后替换
+    createTodo({ title: t, date, startTime, important: imp }).then((realTodo) => {
+      onCommit?.(tempId, realTodo)
+    })
   }
 
   return (

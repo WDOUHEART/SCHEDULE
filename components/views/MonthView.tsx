@@ -49,12 +49,13 @@ interface DroppableCellProps {
   onMoreClick: (e: React.MouseEvent, day: Date) => void
   onInlineDone: () => void
   onInlineAdd: (todo: Todo) => void
+  onInlineCommit: (tempId: string, realTodo: Todo) => void
   onDelete: (id: string) => void
 }
 
 function DroppableCell({
   day, idx, isCurrentMonth, today, isWeekend, isActive, isExpanded,
-  dayTodos, onCellClick, onMoreClick, onInlineDone, onInlineAdd, onDelete,
+  dayTodos, onCellClick, onMoreClick, onInlineDone, onInlineAdd, onInlineCommit, onDelete,
 }: DroppableCellProps) {
   const { setNodeRef, isOver } = useDroppable({ id: day.toISOString() })
   const shown = isExpanded ? dayTodos : dayTodos.slice(0, 3)
@@ -120,7 +121,7 @@ function DroppableCell({
 
       {/* 内联输入框 */}
       {isActive && (
-        <InlineAdd date={day} onDone={onInlineDone} onAdd={onInlineAdd} />
+        <InlineAdd date={day} onDone={onInlineDone} onAdd={onInlineAdd} onCommit={onInlineCommit} />
       )}
     </div>
   )
@@ -247,7 +248,8 @@ export default function MonthView() {
                 onCellClick={handleCellClick}
                 onMoreClick={handleMoreClick}
                 onInlineDone={() => setActiveDay(null)}
-                onInlineAdd={(newTodo) => { setTodos((prev) => [...prev, newTodo]); setActiveDay(null) }}
+                onInlineAdd={(todo) => { setTodos((prev) => [...prev, todo]); setActiveDay(null) }}
+                onInlineCommit={(tempId, real) => setTodos((prev) => prev.map((t) => t.id === tempId ? real : t))}
                 onDelete={(id) => setTodos((prev) => prev.filter((t) => t.id !== id))}
               />
             ))}

@@ -69,10 +69,10 @@ function DraggableTodoRow({ todo, onDelete }: { todo: Todo; onDelete: (id: strin
 
 // ── 右侧：可放置的时间格（仅接收拖拽 + 内联添加）─────
 function DroppableHourSlot({
-  hour, date, isActive, onOpen, onClose, onAdd,
+  hour, date, isActive, onOpen, onClose, onAdd, onCommit,
 }: {
   hour: number; date: Date; isActive: boolean
-  onOpen: () => void; onClose: () => void; onAdd: (todo: Todo) => void
+  onOpen: () => void; onClose: () => void; onAdd: (todo: Todo) => void; onCommit: (tempId: string, real: Todo) => void
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: `day-slot-${hour}`, data: { hour, date } })
   return (
@@ -90,6 +90,7 @@ function DroppableHourSlot({
             startTime={new Date(date.getFullYear(), date.getMonth(), date.getDate(), hour, 0)}
             onDone={onClose}
             onAdd={onAdd}
+            onCommit={onCommit}
           />
         </div>
       )}
@@ -238,7 +239,17 @@ export default function DayView() {
     if (e.key !== 'Enter' || !quickTitle.trim()) return
     const t = quickTitle.trim()
     setQuickTitle('')
-    createTodo({ title: t, date: currentDate }).then((newTodo) => setTodos((prev) => [...prev, newTodo]))
+    const tempId = `opt-${Date.now()}`
+    const now = new Date()
+    setTodos((prev) => [...prev, {
+      id: tempId, title: t, important: false, status: 'PENDING',
+      date: currentDate, startTime: null, endTime: null, note: null,
+      deadline: null, isRecurring: false, recurRule: null, recurGroupId: null,
+      createdAt: now, updatedAt: now, userId: null,
+    }])
+    createTodo({ title: t, date: currentDate }).then((real) =>
+      setTodos((prev) => prev.map((todo) => todo.id === tempId ? real : todo))
+    )
   }
 
   function handleDragStart(event: DragStartEvent) {
@@ -321,7 +332,8 @@ export default function DayView() {
                   isActive={activeHour === hour}
                   onOpen={() => setActiveHour(hour)}
                   onClose={() => setActiveHour(null)}
-                  onAdd={(newTodo) => { setTodos((prev) => [...prev, newTodo]); setActiveHour(null) }}
+                  onAdd={(todo) => { setTodos((prev) => [...prev, todo]); setActiveHour(null) }}
+                  onCommit={(tempId, real) => setTodos((prev) => prev.map((t) => t.id === tempId ? real : t))}
                 />
               </div>
             ))}
