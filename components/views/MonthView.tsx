@@ -44,7 +44,8 @@ function DraggableMonthChip({ todo, onDelete }: { todo: Todo; onDelete: (id: str
   })
   return (
     <div ref={setNodeRef} {...listeners} {...attributes}
-      className={`touch-none select-none ${isDragging ? 'opacity-30' : ''}`}
+      onClick={(e) => e.stopPropagation()}
+      className={`touch-none select-none cursor-grab active:cursor-grabbing ${isDragging ? 'opacity-30' : ''}`}
     >
       <TodoItem todo={todo} variant="chip" onDelete={onDelete} />
     </div>
@@ -159,7 +160,7 @@ export default function MonthView() {
 
   // 拖拽传感器：鼠标移动 8px 或触屏长按 250ms 才触发
   const sensors = useSensors(
-    useSensor(SmartPointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(SmartPointerSensor, { activationConstraint: { distance: 3 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } }),
   )
 

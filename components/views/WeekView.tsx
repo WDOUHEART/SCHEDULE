@@ -35,7 +35,8 @@ function DraggableTodoChip({ todo, onDelete }: { todo: Todo; onDelete: (id: stri
   })
   return (
     <div ref={setNodeRef} {...listeners} {...attributes}
-      className={`touch-none select-none ${isDragging ? 'opacity-30' : ''}`}
+      onClick={(e) => e.stopPropagation()}
+      className={`touch-none select-none cursor-grab active:cursor-grabbing ${isDragging ? 'opacity-30' : ''}`}
     >
       <TodoItem todo={todo} variant="chip" onDelete={onDelete} />
     </div>
@@ -137,7 +138,7 @@ export default function WeekView() {
   const [activeDragData, setActiveDragData] = useState<{ title: string; important: boolean } | null>(null)
 
   const sensors = useSensors(
-    useSensor(SmartPointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(SmartPointerSensor, { activationConstraint: { distance: 3 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 250, tolerance: 5 } }),
   )
 
