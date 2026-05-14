@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useViewStore } from '@/store/viewStore'
@@ -93,26 +94,9 @@ export default function TopBar({ nickname }: { nickname: string }) {
         </nav>
       </div>
 
-      {/* 右：吉祥物小狗 + 用户头像 */}
+      {/* 右：Logo + 用户头像 */}
       <div className="flex items-end pb-3 gap-3">
-        <svg width="44" height="48" viewBox="0 0 44 48" fill="none" className="select-none flex-shrink-0" aria-label="拾光小狗">
-          <path d="M9 22 C5 14 9 5 16 9 L16 25 C13 26 10 24 9 22Z" stroke="#2BA87A" strokeWidth="1.8" strokeLinejoin="round"/>
-          <path d="M35 22 C39 14 35 5 28 9 L28 25 C31 26 34 24 35 22Z" stroke="#2BA87A" strokeWidth="1.8" strokeLinejoin="round"/>
-          <circle cx="22" cy="22" r="13" stroke="#2BA87A" strokeWidth="1.8"/>
-          <circle cx="17" cy="20" r="2.5" fill="#2BA87A"/>
-          <circle cx="17.8" cy="19.2" r="0.9" fill="white"/>
-          <circle cx="27" cy="20" r="2.5" fill="#2BA87A"/>
-          <circle cx="27.8" cy="19.2" r="0.9" fill="white"/>
-          <ellipse cx="22" cy="25" rx="3.5" ry="2.2" fill="#2BA87A"/>
-          <path d="M19.5 27.5 Q22 30.5 24.5 27.5" stroke="#2BA87A" strokeWidth="1.4" strokeLinecap="round"/>
-          <circle cx="13" cy="24" r="2.5" fill="#2BA87A" fillOpacity="0.25"/>
-          <circle cx="31" cy="24" r="2.5" fill="#2BA87A" fillOpacity="0.25"/>
-          <path d="M13 33 C11 40 14 46 22 46 C30 46 33 40 31 33" stroke="#2BA87A" strokeWidth="1.8" strokeLinecap="round"/>
-          <path d="M16 33 C17 29 27 29 28 33" stroke="#2BA87A" strokeWidth="1.8"/>
-          <path d="M15 46 L14 48" stroke="#2BA87A" strokeWidth="1.8" strokeLinecap="round"/>
-          <path d="M29 46 L30 48" stroke="#2BA87A" strokeWidth="1.8" strokeLinecap="round"/>
-          <path d="M31 37 C38 34 41 27 37 23" stroke="#2BA87A" strokeWidth="1.8" strokeLinecap="round"/>
-        </svg>
+        <Image src="/logo.png" alt="拾光日程" width={48} height={48} className="select-none flex-shrink-0 rounded-xl" />
 
         {/* 头像 + 下拉菜单 */}
         <div className="relative" ref={menuRef}>

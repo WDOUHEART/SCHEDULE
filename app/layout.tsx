@@ -4,7 +4,6 @@ import './globals.css'
 export const metadata: Metadata = {
   title: '拾光日程',
   description: '有条理但不焦虑的手帐日程',
-  manifest: '/manifest.webmanifest',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
