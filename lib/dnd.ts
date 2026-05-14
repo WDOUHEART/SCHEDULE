@@ -10,13 +10,12 @@ export class SmartPointerSensor extends PointerSensor {
       eventName: 'onPointerDown' as const,
       handler: ({ nativeEvent: e }: { nativeEvent: PointerEvent }) => {
         if (!e.isPrimary || e.button !== 0) return false
-        const el = e.target as HTMLElement
-        if (
-          el.tagName === 'INPUT' ||
-          el.tagName === 'TEXTAREA' ||
-          el.tagName === 'BUTTON' ||
-          el.isContentEditable
-        ) return false
+        let el = e.target as HTMLElement | null
+        while (el) {
+          if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable) return false
+          if ((el as HTMLElement).dataset.noDnd) return false
+          el = el.parentElement
+        }
         return true
       },
     },

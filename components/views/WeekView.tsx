@@ -54,7 +54,7 @@ function WeekDayDropZone({
   const { setNodeRef, isOver } = useDroppable({ id: `week-day-${di}`, data: { di, type: 'day' } })
   return (
     <div ref={setNodeRef}
-      className={`border-r last:border-r-0 border-line p-1 min-h-[52px] transition-colors ${
+      className={`border-r last:border-r-0 border-line p-1 min-h-[52px] transition-colors overflow-hidden ${
         isOver ? 'bg-accent-bg/40' : isActive ? 'bg-accent-bg/40' : ''
       }`}
     >
@@ -91,7 +91,7 @@ function WeekDroppableSlot({
     <div
       ref={setNodeRef}
       onClick={() => !isSlotActive && onOpen()}
-      className={`border-r last:border-r-0 border-b border-line min-h-12 relative cursor-pointer transition-colors group ${
+      className={`border-r last:border-r-0 border-b border-line min-h-12 relative cursor-pointer transition-colors group overflow-hidden ${
         isOver ? 'bg-accent-bg/40' : isSlotActive ? 'bg-accent-bg/20' : 'hover:bg-paper2'
       }`}
     >

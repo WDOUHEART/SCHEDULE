@@ -93,6 +93,7 @@ export default function TodoItem({ todo, variant = 'chip', onDelete }: TodoItemP
       >
         {/* 状态圆圈 */}
         <button
+          data-no-dnd="true"
           onClick={handleStatusClick}
           className={cn(
             'w-[13px] h-[13px] rounded-full flex items-center justify-center text-[8px] flex-shrink-0 border transition-colors',
@@ -119,7 +120,7 @@ export default function TodoItem({ todo, variant = 'chip', onDelete }: TodoItemP
           <span
             onDoubleClick={handleDoubleClick}
             className={cn(
-              'text-[11px] font-hand flex-1 truncate cursor-text',
+              'text-[11px] font-hand flex-1 truncate cursor-grab',
               isDone && 'line-through text-ink3',
               isSkipped && 'text-ink3',
               isOverdue && 'text-red',
@@ -132,6 +133,7 @@ export default function TodoItem({ todo, variant = 'chip', onDelete }: TodoItemP
         {/* 重要旗 */}
         {localImportant && (
           <span
+            data-no-dnd="true"
             onClick={handleImportantClick}
             className={cn('text-[9px] flex-shrink-0 ml-auto', isDone ? 'opacity-40' : 'text-warm-mid')}
           >
@@ -141,6 +143,7 @@ export default function TodoItem({ todo, variant = 'chip', onDelete }: TodoItemP
 
         {/* hover 时删除按钮 */}
         <button
+          data-no-dnd="true"
           onClick={handleDelete}
           className="text-[9px] text-ink3 opacity-0 group-hover:opacity-100 transition-opacity ml-0.5 hover:text-red flex-shrink-0"
         >
