@@ -6,6 +6,7 @@ import {
   DragOverlay,
   TouchSensor,
   useDroppable,
+  useDraggable,
   useSensor,
   useSensors,
   type DragEndEvent,
@@ -33,6 +34,21 @@ function getDaysInMonth(year: number, month: number): Date[] {
   const remaining = 42 - days.length
   for (let i = 1; i <= remaining; i++) days.push(new Date(year, month + 1, i))
   return days
+}
+
+// ── 月视图可拖拽 Todo 条目 ─────────────────────────────
+function DraggableMonthChip({ todo, onDelete }: { todo: Todo; onDelete: (id: string) => void }) {
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+    id: todo.id,
+    data: { title: todo.title, important: todo.important },
+  })
+  return (
+    <div ref={setNodeRef} {...listeners} {...attributes}
+      className={`touch-none select-none ${isDragging ? 'opacity-30' : ''}`}
+    >
+      <TodoItem todo={todo} variant="chip" onDelete={onDelete} />
+    </div>
+  )
 }
 
 // ── 可放置的日期格 ──────────────────────────────────────
@@ -99,7 +115,7 @@ function DroppableCell({
       {/* Todo 条目 */}
       <div className="flex-1 min-h-0 overflow-hidden">
         {shown.map((todo) => (
-          <TodoItem key={todo.id} todo={todo} variant="chip" onDelete={onDelete} />
+          <DraggableMonthChip key={todo.id} todo={todo} onDelete={onDelete} />
         ))}
         {extra > 0 && (
           <button

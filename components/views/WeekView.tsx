@@ -11,7 +11,7 @@ import Sidebar from '@/components/layout/Sidebar'
 import FAB from '@/components/todo/FAB'
 import InlineAdd from '@/components/todo/InlineAdd'
 import TodoItem from '@/components/todo/TodoItem'
-import { setTodoTime } from '@/app/actions/todos'
+import { setTodoTime, scheduleTodo } from '@/app/actions/todos'
 import { useViewStore } from '@/store/viewStore'
 import { isToday, isSameDay } from '@/lib/utils'
 import type { Todo } from '@/types'
@@ -42,6 +42,40 @@ function DraggableTodoChip({ todo, onDelete }: { todo: Todo; onDelete: (id: stri
   )
 }
 
+// ── 顶部日程区单列：可放置（跨日拖拽）────────────────
+function WeekDayDropZone({
+  di, day, isActive, dayTodos, onAddClick, onInlineDone, onInlineAdd, onInlineCommit, onDelete,
+}: {
+  di: number; day: Date; isActive: boolean; dayTodos: Todo[]
+  onAddClick: () => void; onInlineDone: () => void
+  onInlineAdd: (todo: Todo) => void; onInlineCommit: (tempId: string, real: Todo) => void
+  onDelete: (id: string) => void
+}) {
+  const { setNodeRef, isOver } = useDroppable({ id: `week-day-${di}`, data: { di, type: 'day' } })
+  return (
+    <div ref={setNodeRef}
+      className={`border-r last:border-r-0 border-line p-1 min-h-[52px] transition-colors ${
+        isOver ? 'bg-accent-bg/40' : isActive ? 'bg-accent-bg/40' : ''
+      }`}
+    >
+      {dayTodos.map((todo) => (
+        <DraggableTodoChip key={todo.id} todo={todo} onDelete={onDelete} />
+      ))}
+      {isActive ? (
+        <InlineAdd date={day} onDone={onInlineDone}
+          onAdd={(todo) => { onInlineAdd(todo) }}
+          onCommit={onInlineCommit}
+        />
+      ) : (
+        <button onClick={onAddClick}
+          className="text-[10px] text-ink3/50 hover:text-accent w-full text-left px-0.5 py-0.5 mt-0.5 transition-colors">
+          + 添加
+        </button>
+      )}
+    </div>
+  )
+}
+
 // ── 时间格：可放置 + InlineAdd + Todo 色块 ────────────
 function WeekDroppableSlot({
   di, hour, day, isSlotActive, todos, onOpen, onInlineDone, onInlineAdd,
@@ -51,7 +85,7 @@ function WeekDroppableSlot({
 }) {
   const { setNodeRef, isOver } = useDroppable({
     id: `week-slot-${di}-${hour}`,
-    data: { di, hour },
+    data: { di, hour, type: 'slot' },
   })
   return (
     <div
@@ -162,10 +196,16 @@ export default function WeekView() {
     setActiveDragData(null)
     const { active, over } = event
     if (!over) return
-    const { di, hour } = over.data.current as { di: number; hour: number }
-    const day = weekDays[di]
-    const startTime = new Date(day.getFullYear(), day.getMonth(), day.getDate(), hour, 0, 0)
-    await setTodoTime(active.id as string, day, startTime)
+    const data = over.data.current as { di: number; type?: string; hour?: number }
+    const day = weekDays[data.di]
+    if (data.type === 'day') {
+      // 拖到日程区 → 只改日期，不设时间
+      await scheduleTodo(active.id as string, day)
+    } else {
+      // 拖到时间轴格 → 改日期 + 时间
+      const startTime = new Date(day.getFullYear(), day.getMonth(), day.getDate(), data.hour!, 0, 0)
+      await setTodoTime(active.id as string, day, startTime)
+    }
     fetchTodos()
     setSidebarRefreshKey((k) => k + 1)
   }
@@ -207,28 +247,20 @@ export default function WeekView() {
             {todoSectionOpen && (
               <div className="grid overflow-x-auto" style={{ gridTemplateColumns: '44px repeat(7, 1fr)' }}>
                 <div className="border-r border-line min-h-[52px]" />
-                {weekDays.map((day, i) => {
-                  const isActive = activeDay !== null && isSameDay(activeDay, day)
-                  const dayTodos = todosForDay(day)
-                  return (
-                    <div key={i} className={`border-r last:border-r-0 border-line p-1 min-h-[52px] transition-colors ${isActive ? 'bg-accent-bg/40' : ''}`}>
-                      {dayTodos.map((todo) => (
-                        <DraggableTodoChip key={todo.id} todo={todo} onDelete={(id) => setTodos((prev) => prev.filter((t) => t.id !== id))} />
-                      ))}
-                      {isActive ? (
-                        <InlineAdd date={day} onDone={() => setActiveDay(null)}
-                          onAdd={(todo) => { setTodos((prev) => [...prev, todo]); setActiveDay(null) }}
-                          onCommit={(tempId, real) => setTodos((prev) => prev.map((t) => t.id === tempId ? real : t))}
-                        />
-                      ) : (
-                        <button onClick={() => handleDayAddClick(day)}
-                          className="text-[10px] text-ink3/50 hover:text-accent w-full text-left px-0.5 py-0.5 mt-0.5 transition-colors">
-                          + 添加
-                        </button>
-                      )}
-                    </div>
-                  )
-                })}
+                {weekDays.map((day, i) => (
+                  <WeekDayDropZone
+                    key={i}
+                    di={i}
+                    day={day}
+                    isActive={activeDay !== null && isSameDay(activeDay, day)}
+                    dayTodos={todosForDay(day)}
+                    onAddClick={() => handleDayAddClick(day)}
+                    onInlineDone={() => setActiveDay(null)}
+                    onInlineAdd={(todo) => { setTodos((prev) => [...prev, todo]); setActiveDay(null) }}
+                    onInlineCommit={(tempId, real) => setTodos((prev) => prev.map((t) => t.id === tempId ? real : t))}
+                    onDelete={(id) => setTodos((prev) => prev.filter((t) => t.id !== id))}
+                  />
+                ))}
               </div>
             )}
           </div>

@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { updateTodoStatus, toggleTodoImportant, deleteTodo } from '@/app/actions/todos'
+import { useState, useEffect, useRef } from 'react'
+import { updateTodoStatus, toggleTodoImportant, deleteTodo, updateTodoTitle } from '@/app/actions/todos'
 import type { Todo, TodoStatus } from '@/types'
 import { cn } from '@/lib/utils'
 
@@ -30,6 +30,9 @@ interface TodoItemProps {
 export default function TodoItem({ todo, variant = 'chip', onDelete }: TodoItemProps) {
   const [localStatus, setLocalStatus] = useState<TodoStatus>(todo.status)
   const [localImportant, setLocalImportant] = useState(todo.important)
+  const [isEditing, setIsEditing] = useState(false)
+  const [editValue, setEditValue] = useState(todo.title)
+  const editRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => { setLocalStatus(todo.status) }, [todo.status])
   useEffect(() => { setLocalImportant(todo.important) }, [todo.important])
@@ -53,6 +56,26 @@ export default function TodoItem({ todo, variant = 'chip', onDelete }: TodoItemP
     e.stopPropagation()
     onDelete?.(todo.id)
     deleteTodo(todo.id)
+  }
+
+  function handleDoubleClick(e: React.MouseEvent) {
+    e.stopPropagation()
+    setEditValue(todo.title)
+    setIsEditing(true)
+    setTimeout(() => editRef.current?.focus(), 0)
+  }
+
+  function commitEdit() {
+    setIsEditing(false)
+    const v = editValue.trim()
+    if (v && v !== todo.title) updateTodoTitle(todo.id, v)
+    else setEditValue(todo.title)
+  }
+
+  function handleEditKeyDown(e: React.KeyboardEvent) {
+    if (e.key === 'Enter') { e.preventDefault(); commitEdit() }
+    if (e.key === 'Escape') { setIsEditing(false); setEditValue(todo.title) }
+    e.stopPropagation()
   }
 
   const isDone = localStatus === 'DONE'
@@ -82,16 +105,29 @@ export default function TodoItem({ todo, variant = 'chip', onDelete }: TodoItemP
         </button>
 
         {/* 标题 */}
-        <span
-          className={cn(
-            'text-[11px] font-hand flex-1 truncate',
-            isDone && 'line-through text-ink3',
-            isSkipped && 'text-ink3',
-            isOverdue && 'text-red',
-          )}
-        >
-          {todo.title}
-        </span>
+        {isEditing ? (
+          <input
+            ref={editRef}
+            value={editValue}
+            onChange={(e) => setEditValue(e.target.value)}
+            onKeyDown={handleEditKeyDown}
+            onBlur={commitEdit}
+            onClick={(e) => e.stopPropagation()}
+            className="flex-1 text-[11px] font-hand bg-transparent border-none outline-none min-w-0"
+          />
+        ) : (
+          <span
+            onDoubleClick={handleDoubleClick}
+            className={cn(
+              'text-[11px] font-hand flex-1 truncate cursor-text',
+              isDone && 'line-through text-ink3',
+              isSkipped && 'text-ink3',
+              isOverdue && 'text-red',
+            )}
+          >
+            {todo.title}
+          </span>
+        )}
 
         {/* 重要旗 */}
         {localImportant && (
@@ -137,16 +173,29 @@ export default function TodoItem({ todo, variant = 'chip', onDelete }: TodoItemP
 
       {/* 内容 */}
       <div className="flex-1 min-w-0">
-        <div
-          className={cn(
-            'text-[14px] font-hand leading-snug',
-            isDone && 'line-through text-ink3',
-            isSkipped && 'text-ink3',
-            isOverdue && 'text-red',
-          )}
-        >
-          {todo.title}
-        </div>
+        {isEditing ? (
+          <input
+            ref={editRef}
+            value={editValue}
+            onChange={(e) => setEditValue(e.target.value)}
+            onKeyDown={handleEditKeyDown}
+            onBlur={commitEdit}
+            onClick={(e) => e.stopPropagation()}
+            className="w-full text-[14px] font-hand bg-transparent border-none outline-none border-b border-accent"
+          />
+        ) : (
+          <div
+            onDoubleClick={handleDoubleClick}
+            className={cn(
+              'text-[14px] font-hand leading-snug cursor-text',
+              isDone && 'line-through text-ink3',
+              isSkipped && 'text-ink3',
+              isOverdue && 'text-red',
+            )}
+          >
+            {todo.title}
+          </div>
+        )}
         {todo.note && (
           <div className="text-[11px] text-ink3 mt-0.5 truncate">{todo.note}</div>
         )}
