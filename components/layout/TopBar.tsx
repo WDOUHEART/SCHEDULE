@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useViewStore } from '@/store/viewStore'
@@ -96,7 +95,8 @@ export default function TopBar({ nickname }: { nickname: string }) {
 
       {/* 右：Logo + 用户头像 */}
       <div className="flex items-end pb-3 gap-3">
-        <Image src="/logo.png" alt="拾光日程" width={48} height={48} className="select-none flex-shrink-0 rounded-xl" />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/logo.png" alt="拾光日程" width={48} height={48} className="select-none flex-shrink-0 rounded-xl" />
 
         {/* 头像 + 下拉菜单 */}
         <div className="relative" ref={menuRef}>
